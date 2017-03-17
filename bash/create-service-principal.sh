@@ -3,8 +3,9 @@
 #echo "Usage:
 #  1 bash create-service-principal.sh
 #  2 bash create-service-principal.sh <Subscription ID>
-# You need Azure CLI: https://docs.microsoft.com/azure/xplat-cli-install
-
+# You need Azure CLI 1.0 or 2.0 installed
+#    1.0: https://docs.microsoft.com/azure/xplat-cli-install
+#    2.0: https://github.com/Azure/azure-cli
 SUBSCRIPTION_ID=$1
 
 #echo ""
@@ -19,11 +20,20 @@ MY_APP_KEY=$(python -c 'import uuid; print (uuid.uuid4().hex)')
 my_app_id_URI="${MY_APP_NAME}_id"
 
 #check if the user has subscriptions. If not she's probably not logged in
-subscriptions_list=$(azure account list --json)
+if (command -v az >/dev/null); then
+  subscriptions_list=$(az account list)
+else
+  subscriptions_list=$(azure account list --json)
+fi
+
 subscriptions_list_count=$(echo $subscriptions_list | jq '. | length' 2>/dev/null)
 if [ $? -ne 0 ] || [ "$subscriptions_list_count" -eq "0" ]
 then
-  azure login
+  if (command -v az >/dev/null); then
+    az login
+  else
+    azure login
+  fi
 else
   echo "  You are already logged in with an Azure account so we won't ask for credentials again."
   echo "  If you want to select a subscription from a different account, before running this script you should either log out from all the Azure accounts or login manually with the new account."
@@ -35,7 +45,11 @@ if [ -z "$SUBSCRIPTION_ID" ]
 then
   #prompt for subscription
   subscription_index=0
-  subscriptions_list=$(azure account list --json)
+  if (command -v az >/dev/null); then
+    subscriptions_list=$(az account list)
+  else
+    subscriptions_list=$(azure account list --json)
+  fi
   subscriptions_list_count=$(echo $subscriptions_list | jq '. | length')
   if [ $subscriptions_list_count -eq 0 ]
   then
@@ -64,7 +78,12 @@ then
   echo ""
 fi
 
-azure account set $SUBSCRIPTION_ID >/dev/null
+if (command -v az >/dev/null); then
+  az account set --subscription="${SUBSCRIPTION_ID}"
+else
+  azure account set $SUBSCRIPTION_ID >/dev/null
+fi
+
 if [ $? -ne 0 ]
 then
   exit 1
@@ -73,6 +92,9 @@ else
   echo ""
 fi
 
+if (command -v az >/dev/null); then
+  az ad sp create-for-rbac --role="Owner" --scopes="/subscriptions/${SUBSCRIPTION_ID}"
+else
 MY_SUBSCRIPTION_ID=$(azure account show --json | jq -r '.[0].id')
 MY_TENANT_ID=$(azure account show --json | jq -r '.[0].tenantId')
 
@@ -137,3 +159,4 @@ echo "  "
 echo "  You can verify the service principal was created properly by running:"
 echo "  azure login -u "$MY_CLIENT_ID" --service-principal --tenant $MY_TENANT_ID"
 echo "  "
+fi
