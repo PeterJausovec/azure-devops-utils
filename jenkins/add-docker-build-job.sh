@@ -18,6 +18,8 @@ Arguments
   --job_short_name|-jsn               : Desired Jenkins job short name
   --job_display_name|-jdn             : Desired Jenkins job display name
   --job_description|-jd               : Desired Jenkins job description
+  --service_name|-sn                  : Desired service name
+  --cd_job_name|-cdn                  : Desired Jenkins job name for CD
   --scm_poll_schedule|-sps            : cron style schedule for SCM polling
   --scm_poll_ignore_commit_hooks|spi  : Ignore changes notified by SCM post-commit hooks. (Will be ignore if the poll schedule is not defined)
   --artifacts_location|-al            : Url used to reference other scripts/artifacts.
@@ -40,8 +42,10 @@ credentials_id="docker_credentials"
 credentials_desc="Docker Container Registry Credentials"
 job_short_name="basic-docker-build"
 job_display_name="Basic Docker Build"
+service_name="my-service"
+cd_job_name="${service_name}-CD"
 job_description="A basic pipeline that builds a Docker container. The job expects a Dockerfile at the root of the git repository"
-repository="${USER}/myfirstapp"
+repository="${USER}/${service_name}"
 scm_poll_schedule=""
 scm_poll_ignore_commit_hooks="0"
 artifacts_location="https://raw.githubusercontent.com/Azure/azure-devops-utils/master/"
@@ -103,6 +107,10 @@ do
       job_description="$1"
       shift
       ;;
+    --service_name|-sn)
+      service_name="$1"
+      shift
+      ;;
    --scm_poll_schedule|-sps)
       scm_poll_schedule="$1"
       shift
@@ -156,6 +164,7 @@ job_xml=${job_xml//'{insert-git-url}'/${git_url}}
 job_xml=${job_xml//'{insert-registry}'/${registry}}
 job_xml=${job_xml//'{insert-docker-credentials}'/${credentials_id}}
 job_xml=${job_xml//'{insert-container-repository}'/${repository}}
+job_xml=${job_xml//'{insert-cd-job-name}'/${cd_job_name}}
 
 
 if [ -n "${scm_poll_schedule}" ]

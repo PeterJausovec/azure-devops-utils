@@ -8,6 +8,11 @@
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
+          <name>cd_job_name</name>
+          <description>CD Job Name</description>
+          <defaultValue>{insert-cd-job-name}</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
           <name>git_repo</name>
           <description>Git repository from where we&apos;re going to checkout the code (master branch) and build a docker image.
 NB! The repository must contain a Dockerfile in the root</description>
