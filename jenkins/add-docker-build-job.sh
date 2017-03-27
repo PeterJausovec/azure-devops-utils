@@ -219,6 +219,7 @@ retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugi
 retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "workflow-aggregator" -deploy --username ${jenkins_user_name} --password ${jenkins_password}
 retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "docker-workflow" -restart --username ${jenkins_user_name} --password ${jenkins_password}
 retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "git" -restart --username ${jenkins_user_name} --password ${jenkins_password}
+retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "blueocean" -restart --username ${jenkins_user_name} --password ${jenkins_password}
 
 #wait for instance to be back online
 retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} version --username ${jenkins_user_name} --password ${jenkins_password}
