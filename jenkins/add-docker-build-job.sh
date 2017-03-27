@@ -111,6 +111,10 @@ do
       service_name="$1"
       shift
       ;;
+    --cd_job_name|-cdn)
+      cd_job_name="$1"
+      shift
+      ;;
    --scm_poll_schedule|-sps)
       scm_poll_schedule="$1"
       shift
