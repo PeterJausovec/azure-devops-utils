@@ -1,7 +1,11 @@
 #!/bin/bash
+
+# Defaults (read these from arguments)
 jenkins_url="http://127.0.0.1:8080"
 cd_job_name="servicea-CD"
 artifacts_location="https://raw.githubusercontent.com/PeterJausovec/azure-devops-utils/master"
+ci_job_name="servicea-CI"
+git_url="https://github.com/peterjausovec/servicea"
 
 cd_job_xml=$(curl -s ${artifacts_location}/jenkins/cd-job.xml)
 
