@@ -40,11 +40,11 @@ do
       shift
       ;;
     --ci_job_name|-cin)
-      registry="$1"
+      ci_job_name="$1"
       shift
       ;;
     --cd_job_name|-cdn)
-      registry_user_name="$1"
+      cd_job_name="$1"
       shift
       ;;
     --artifacts_location|-al)
