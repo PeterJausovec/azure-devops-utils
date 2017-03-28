@@ -61,6 +61,20 @@ do
   esac
 done
 
+function retry_until_successful {
+    counter=0
+    "${@}"
+    while [ $? -ne 0 ]; do
+        if [[ "$counter" -gt 20 ]]; then
+            exit 1
+        else
+            let counter++
+        fi
+        sleep 5
+        "${@}"
+    done;
+}
+
 throw_if_empty --jenkins_url $jenkins_url
 throw_if_empty --ci_job_name $ci_job_name
 throw_if_empty --cd_job_name $cd_job_name
@@ -73,7 +87,7 @@ cd_job_xml=${cd_job_xml//'{insert-git-url-here}'/${git_url}}
 
 # Create the job
 echo "${cd_job_xml}" > cdjob.xml
-cat cdjob.xml | java -jar jenkins-cli.jar -s ${jenkins_url} create-job ${cd_job_name}
+retry_until_successful cat cdjob.xml | java -jar jenkins-cli.jar -s ${jenkins_url} create-job ${cd_job_name}
 
 # Cleanup
 rm cdjob.xml
