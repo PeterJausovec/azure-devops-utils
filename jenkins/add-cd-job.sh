@@ -9,6 +9,7 @@ Arguments
   --git_url|-g              [Required]: Git URL with a Dockerfile in it's root
   --ci_job_name|-cin                  : Existing CI job name
   --cd_job_name|-cdn                  : Desired Jenkins job name for CD
+  --cd_job_display_name|-cddn         : Desired Jenkins job display name for CD
   --artifacts_location|-al            : Url used to reference other scripts/artifacts.
 EOF
 }
@@ -45,6 +46,10 @@ do
       ;;
     --cd_job_name|-cdn)
       cd_job_name="$1"
+      shift
+      ;;
+    --cd_job_display_name|-cddn)
+      cd_job_display_name="$1"
       shift
       ;;
     --artifacts_location|-al)
@@ -84,6 +89,7 @@ throw_if_empty --git_url $git_url
 cd_job_xml=$(curl -s ${artifacts_location}/jenkins/cd-job.xml)
 cd_job_xml=${cd_job_xml//'{insert-ci-job-here}'/${ci_job_name}}
 cd_job_xml=${cd_job_xml//'{insert-git-url-here}'/${git_url}}
+cd_job_xml=${cd_job_xml//'{insert-cd-job-display-name}'/${cd_job_display_name}}
 
 # Create the job
 echo "${cd_job_xml}" > cdjob.xml
