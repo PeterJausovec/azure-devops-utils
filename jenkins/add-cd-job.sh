@@ -107,6 +107,7 @@ cd_job_xml=$(curl -s ${artifacts_location}/jenkins/cd-job.xml)
 cd_job_xml=${cd_job_xml//'{insert-ci-job-here}'/${ci_job_name}}
 cd_job_xml=${cd_job_xml//'{insert-git-url-here}'/${git_url}}
 cd_job_xml=${cd_job_xml//'{insert-cd-job-display-name}'/${cd_job_display_name}}
+cd_job_xml=${cd_job_xml//'{insert-groovy-script}'/"$(curl -s ${artifacts_location}/jenkins/cd-pipeline.groovy)"}
 
 if [ -z "$jenkins_password" ]; then
   # NOTE: Intentionally setting this after the first retry_until_successful to ensure the initialAdminPassword file exists
