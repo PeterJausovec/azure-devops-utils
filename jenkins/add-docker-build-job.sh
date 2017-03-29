@@ -169,6 +169,7 @@ job_xml=${job_xml//'{insert-registry}'/${registry}}
 job_xml=${job_xml//'{insert-docker-credentials}'/${credentials_id}}
 job_xml=${job_xml//'{insert-container-repository}'/${repository}}
 job_xml=${job_xml//'{insert-cd-job-name}'/${cd_job_name}}
+job_xml=${job_xml//'{insert-service-name}'/${service_name}}
 
 
 if [ -n "${scm_poll_schedule}" ]
