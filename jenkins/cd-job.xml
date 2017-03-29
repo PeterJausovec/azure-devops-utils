@@ -37,8 +37,6 @@
     </scm>
     <scriptPath>Jenkinsfile</scriptPath>
     <lightweight>true</lightweight>
-  </definition>
-  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.27">
     <script>
     {insert-groovy-script}
     </script>
