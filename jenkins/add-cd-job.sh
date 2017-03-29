@@ -85,6 +85,10 @@ throw_if_empty --ci_job_name $ci_job_name
 throw_if_empty --cd_job_name $cd_job_name
 throw_if_empty --git_url $git_url
 
+
+# Download jenkins cli (wait for Jenkins to be online)
+retry_until_successful wget ${jenkins_url}/jnlpJars/jenkins-cli.jar -O jenkins-cli.jar
+
 # Download the CD job definition
 cd_job_xml=$(curl -s ${artifacts_location}/jenkins/cd-job.xml)
 cd_job_xml=${cd_job_xml//'{insert-ci-job-here}'/${ci_job_name}}
@@ -97,3 +101,4 @@ retry_until_successful cat cdjob.xml | java -jar jenkins-cli.jar -s ${jenkins_ur
 
 # Cleanup
 rm cdjob.xml
+rm jenkins-cli.jar
