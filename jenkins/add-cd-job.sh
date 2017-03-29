@@ -8,8 +8,6 @@ Arguments
   --jenkins_url|-j          [Required]: Jenkins URL
   --jenkins_user_name|-ju   [Required]: Jenkins user name
   --jenkins_password|-jp              : Jenkins password. If not specified and the user name is "admin", the initialAdminPassword will be used
-  --git_url|-g              [Required]: Git URL with a Dockerfile in it's root
-  --ci_job_name|-cin                  : Existing CI job name
   --cd_job_name|-cdn                  : Desired Jenkins job name for CD
   --cd_job_display_name|-cddn         : Desired Jenkins job display name for CD
   --artifacts_location|-al            : Url used to reference other scripts/artifacts.
@@ -44,14 +42,6 @@ do
       ;;
     --jenkins_password|-jp)
       jenkins_password="$1"
-      shift
-      ;;
-    --git_url|-g)
-      git_url="$1"
-      shift
-      ;;
-    --ci_job_name|-cin)
-      ci_job_name="$1"
       shift
       ;;
     --cd_job_name|-cdn)
@@ -91,9 +81,7 @@ function retry_until_successful {
 }
 
 throw_if_empty --jenkins_url $jenkins_url
-throw_if_empty --ci_job_name $ci_job_name
 throw_if_empty --cd_job_name $cd_job_name
-throw_if_empty --git_url $git_url
 throw_if_empty --jenkins_user_name $jenkins_user_name
 if [ "$jenkins_user_name" != "admin" ]; then
   throw_if_empty --jenkins_password $jenkins_password
@@ -104,8 +92,6 @@ retry_until_successful wget ${jenkins_url}/jnlpJars/jenkins-cli.jar -O jenkins-c
 
 # Download the CD job definition
 cd_job_xml=$(curl -s ${artifacts_location}/jenkins/cd-job.xml)
-cd_job_xml=${cd_job_xml//'{insert-ci-job-here}'/${ci_job_name}}
-cd_job_xml=${cd_job_xml//'{insert-git-url-here}'/${git_url}}
 cd_job_xml=${cd_job_xml//'{insert-cd-job-display-name}'/${cd_job_display_name}}
 cd_job_xml=${cd_job_xml//'{insert-groovy-script}'/"$(curl -s ${artifacts_location}/jenkins/cd-pipeline.groovy)"}
 
