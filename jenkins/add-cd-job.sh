@@ -6,6 +6,8 @@ Command
   $0
 Arguments
   --jenkins_url|-j          [Required]: Jenkins URL
+  --jenkins_user_name|-ju   [Required]: Jenkins user name
+  --jenkins_password|-jp              : Jenkins password. If not specified and the user name is "admin", the initialAdminPassword will be used
   --git_url|-g              [Required]: Git URL with a Dockerfile in it's root
   --ci_job_name|-cin                  : Existing CI job name
   --cd_job_name|-cdn                  : Desired Jenkins job name for CD
@@ -34,6 +36,14 @@ do
   case $key in
     --jenkins_url|-j)
       jenkins_url="$1"
+      shift
+      ;;
+    --jenkins_user_name|-ju)
+      jenkins_user_name="$1"
+      shift
+      ;;
+    --jenkins_password|-jp)
+      jenkins_password="$1"
       shift
       ;;
     --git_url|-g)
@@ -84,7 +94,10 @@ throw_if_empty --jenkins_url $jenkins_url
 throw_if_empty --ci_job_name $ci_job_name
 throw_if_empty --cd_job_name $cd_job_name
 throw_if_empty --git_url $git_url
-
+throw_if_empty --jenkins_user_name $jenkins_user_name
+if [ "$jenkins_user_name" != "admin" ]; then
+  throw_if_empty --jenkins_password $jenkins_password
+fi
 
 # Download jenkins cli (wait for Jenkins to be online)
 retry_until_successful wget ${jenkins_url}/jnlpJars/jenkins-cli.jar -O jenkins-cli.jar
@@ -95,9 +108,14 @@ cd_job_xml=${cd_job_xml//'{insert-ci-job-here}'/${ci_job_name}}
 cd_job_xml=${cd_job_xml//'{insert-git-url-here}'/${git_url}}
 cd_job_xml=${cd_job_xml//'{insert-cd-job-display-name}'/${cd_job_display_name}}
 
+if [ -z "$jenkins_password" ]; then
+  # NOTE: Intentionally setting this after the first retry_until_successful to ensure the initialAdminPassword file exists
+  jenkins_password=`sudo cat /var/lib/jenkins/secrets/initialAdminPassword`
+fi
+
 # Create the job
 echo "${cd_job_xml}" > cdjob.xml
-retry_until_successful cat cdjob.xml | java -jar jenkins-cli.jar -s ${jenkins_url} create-job ${cd_job_name}
+retry_until_successful cat cdjob.xml | java -jar jenkins-cli.jar -s ${jenkins_url} create-job ${cd_job_name} --username ${jenkins_user_name} --password ${jenkins_password}
 
 # Cleanup
 rm cdjob.xml
