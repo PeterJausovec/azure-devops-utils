@@ -68,7 +68,7 @@ pipeline {
             steps {
                 script {
                     if (env.CANARY_ROLLOUT == "true") {
-                        sh "kubectl annotate --overwrite service ${params.SERVICE_NAME} l5d=\"100*/label/track/stable/${params.SERVICE_NAME} & 0*/label/track/canary/${params.SERVICE_NAME}\""
+                        sh "kubectl annotate --overwrite service ${params.SERVICE_NAME} l5d=\"100*/label/track/stable/${params.SERVICE_NAME} &amp; 0*/label/track/canary/${params.SERVICE_NAME}\""
                         sleep 15
                     } else {
                         sh "kubectl annotate --overwrite service ${params.SERVICE_NAME} l5d=\"0*/label/track/stable/${params.SERVICE_NAME}\""
@@ -80,7 +80,7 @@ pipeline {
             steps {
                 script {
                     if (env.CANARY_ROLLOUT == "true") {
-                        sh "kubectl annotate --overwrite service ${params.SERVICE_NAME} l5d=\"95*/label/track/stable/${params.SERVICE_NAME} & 5*/label/track/canary/${params.SERVICE_NAME}\""
+                        sh "kubectl annotate --overwrite service ${params.SERVICE_NAME} l5d=\"95*/label/track/stable/${params.SERVICE_NAME} &amp; 5*/label/track/canary/${params.SERVICE_NAME}\""
                         sleep 15
                     }
                 }
@@ -90,7 +90,7 @@ pipeline {
             steps {
                 script {
                     if (env.CANARY_ROLLOUT == "true") {
-                        sh "kubectl annotate --overwrite service ${params.SERVICE_NAME} l5d=\"90*/label/track/stable/${params.SERVICE_NAME} & 10*/label/track/canary/${params.SERVICE_NAME}\""
+                        sh "kubectl annotate --overwrite service ${params.SERVICE_NAME} l5d=\"90*/label/track/stable/${params.SERVICE_NAME} &amp; 10*/label/track/canary/${params.SERVICE_NAME}\""
                         sleep 15
                     }
                 }
@@ -100,7 +100,7 @@ pipeline {
             steps {
                 script {
                     if (env.CANARY_ROLLOUT == "true") {
-                        sh "kubectl annotate --overwrite service ${params.SERVICE_NAME} l5d=\"75*/label/track/stable/${params.SERVICE_NAME} & 25*/label/track/canary/${params.SERVICE_NAME}\""
+                        sh "kubectl annotate --overwrite service ${params.SERVICE_NAME} l5d=\"75*/label/track/stable/${params.SERVICE_NAME} &amp; 25*/label/track/canary/${params.SERVICE_NAME}\""
                         sleep 15
                     }
                 }
@@ -110,7 +110,7 @@ pipeline {
             steps {
                 script {
                     if (env.CANARY_ROLLOUT == "true") {
-                        sh "kubectl annotate --overwrite service ${params.SERVICE_NAME} l5d=\"50*/label/track/stable/${params.SERVICE_NAME} & 50*/label/track/canary/${params.SERVICE_NAME}\""
+                        sh "kubectl annotate --overwrite service ${params.SERVICE_NAME} l5d=\"50*/label/track/stable/${params.SERVICE_NAME} &amp; 50*/label/track/canary/${params.SERVICE_NAME}\""
                         sleep 15
                     }
                 }
@@ -120,7 +120,7 @@ pipeline {
             steps {
                 script {
                     if (env.CANARY_ROLLOUT == "true") {
-                        sh "kubectl annotate --overwrite service ${params.SERVICE_NAME} l5d=\"25*/label/track/stable/${params.SERVICE_NAME} & 75*/label/track/canary/${params.SERVICE_NAME}\""
+                        sh "kubectl annotate --overwrite service ${params.SERVICE_NAME} l5d=\"25*/label/track/stable/${params.SERVICE_NAME} &amp; 75*/label/track/canary/${params.SERVICE_NAME}\""
                         sleep 15
                     }
                 }
