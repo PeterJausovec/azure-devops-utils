@@ -215,20 +215,32 @@ if [ -z "$jenkins_password" ]; then
   jenkins_password=`sudo cat /var/lib/jenkins/secrets/initialAdminPassword`
 fi
 
+# Check if /var/lib/jenkins/config.xml contains <useSecurity>false</useSecurity>
+str_to_check="<useSecurity>false</useSecurity>"
+
+username_password_string="--username ${jenkins_user_name} --password ${jenkins_password}"
+if grep -q ${str_to_check} "/var/lib/jenkins/config.xml"; then
+  echo "Jenkins is unsecured, not using username/password"
+  # Jenkins is unsecured - no need to pass username and password 
+  username_password_string=""
+fi
+
+# TODO: Check if these are already installed and skip them if they are
 #install the required plugins
-retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "credentials" -deploy --username ${jenkins_user_name} --password ${jenkins_password}
-retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "workflow-aggregator" -deploy --username ${jenkins_user_name} --password ${jenkins_password}
-retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "docker-workflow" -restart --username ${jenkins_user_name} --password ${jenkins_password}
-retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "git" -restart --username ${jenkins_user_name} --password ${jenkins_password}
-retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "blueocean" -restart --username ${jenkins_user_name} --password ${jenkins_password}
+retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "credentials" -deploy ${username_password_string}
+retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "workflow-aggregator" -deploy ${username_password_string}
+retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "docker-workflow" -restart ${username_password_string}
+retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "git" -restart ${username_password_string}
+retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "blueocean" -restart ${username_password_string}
 
 #wait for instance to be back online
-retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} version --username ${jenkins_user_name} --password ${jenkins_password}
+retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} version ${username_password_string}
 
+# TODO: Check if it's already added and skip if it is
 #add user/pwd
-retry_until_successful echo "${credentials_xml}" | java -jar jenkins-cli.jar -s ${jenkins_url} create-credentials-by-xml SystemCredentialsProvider::SystemContextResolver::jenkins "(global)" --username ${jenkins_user_name} --password ${jenkins_password}
+retry_until_successful echo "${credentials_xml}" | java -jar jenkins-cli.jar -s ${jenkins_url} create-credentials-by-xml SystemCredentialsProvider::SystemContextResolver::jenkins "(global)" ${username_password_string}
 #add job
-retry_until_successful cat job.xml | java -jar jenkins-cli.jar -s ${jenkins_url} create-job ${job_short_name} --username ${jenkins_user_name} --password ${jenkins_password}
+retry_until_successful cat job.xml | java -jar jenkins-cli.jar -s ${jenkins_url} create-job ${job_short_name} ${username_password_string}
 
 #cleanup
 rm job.xml

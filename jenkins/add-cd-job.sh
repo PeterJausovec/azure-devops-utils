@@ -100,9 +100,20 @@ if [ -z "$jenkins_password" ]; then
   jenkins_password=`sudo cat /var/lib/jenkins/secrets/initialAdminPassword`
 fi
 
+
+# Check if /var/lib/jenkins/config.xml contains <useSecurity>false</useSecurity>
+str_to_check="<useSecurity>false</useSecurity>"
+
+username_password_string="--username ${jenkins_user_name} --password ${jenkins_password}"
+if grep -q ${str_to_check} "/var/lib/jenkins/config.xml"; then
+  echo "Jenkins is unsecured, not using username/password"
+  # Jenkins is unsecured - no need to pass username and password 
+  username_password_string=""
+fi
+
 # Create the job
 echo "${cd_job_xml}" > cdjob.xml
-retry_until_successful cat cdjob.xml | java -jar jenkins-cli.jar -s ${jenkins_url} create-job ${cd_job_name} --username ${jenkins_user_name} --password ${jenkins_password}
+retry_until_successful cat cdjob.xml | java -jar jenkins-cli.jar -s ${jenkins_url} create-job ${cd_job_name} ${username_password_string}
 
 # Cleanup
 rm cdjob.xml
