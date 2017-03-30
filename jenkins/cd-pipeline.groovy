@@ -15,7 +15,6 @@ pipeline {
         stage ('Deploy') {
             steps {
                 sh 'kubectl apply -f https://raw.githubusercontent.com/stepro/k8s-l5d/master/l5d.yaml'
-                sleep 5
                 script {
                     try {
                         sh "kubectl expose deployment l5d --name=${params.SERVICE_NAME} --port=80"

@@ -13,6 +13,6 @@ node {
     }
     stage('Kick off CD') {
       registry = params.registry_url.replace("https://", "");
-      build job: params.cd_job_name, parameters: [string(name: 'REGISTRY_URL', value:  registry), string(name: 'IMAGE_NAME', value: params.docker_repository), string(name: 'IMAGE_TAG', value: "${env.BUILD_NUMBER}")]
+      build job: params.cd_job_name, parameters: [string(name: 'REGISTRY_URL', value:  registry), string(name: 'IMAGE_NAME', value: params.docker_repository), string(name: 'IMAGE_TAG', value: "${env.BUILD_NUMBER}"), string(name: 'SERVICE_NAME', value: params.service_name)]
     }
 }
