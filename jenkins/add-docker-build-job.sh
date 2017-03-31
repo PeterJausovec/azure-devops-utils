@@ -225,12 +225,8 @@ if grep -q ${str_to_check} "/var/lib/jenkins/config.xml"; then
   username_password_string=""
 fi
 
-get_plugins=$(cat <<EOF 
-def plugins = jenkins.model.Jenkins.instance.getPluginManager().getPlugins()
-plugins.each {println "${it.getShortName()}"}
-EOF
-)
-echo "${get_plugins}" > get-plugins.groovy
+echo 'def plugins = jenkins.model.Jenkins.instance.getPluginManager().getPlugins()
+plugins.each {println "${it.getShortName()}"}' > get-plugins.groovy
 
 all_plugins=$(retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} groovy ${username_password_string} = < get-plugins.groovy)
 installed=0
@@ -280,3 +276,4 @@ retry_until_successful cat job.xml | java -jar jenkins-cli.jar -s ${jenkins_url}
 #cleanup
 rm job.xml
 rm jenkins-cli.jar
+rm get-plugins.groovy
