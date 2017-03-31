@@ -229,26 +229,31 @@ all_plugins=$(java -jar jenkins-cli.jar -s {jenkins_url} groovy ${username_passw
 installed=0
 #install the required plugins
 if [[ $all_plugins != *"credentials"* ]]; then
+  echo "Installing credentials plugin"
   retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "credentials" -deploy ${username_password_string}
   installed=1
 fi
 
 if [[ $all_plugins != *"workflow-aggregator"* ]]; then
+  echo "Installing workflow-aggregator plugin"
   retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "workflow-aggregator" -deploy ${username_password_string}
   installed=1
 fi
 
 if [[ $all_plugins != *"docker-workflow"* ]]; then
+  echo "Installing docker-workflow plugin"
   retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "docker-workflow" -restart ${username_password_string}
   installed=1
 fi
 
 if [[ $all_plugins != *"git"* ]]; then
+  echo "Installing git plugin"
   retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "git" -restart ${username_password_string}
   installed=1
 fi
 
 if [[ $all_plugins != *"blueocean"* ]]; then
+  echo "Installing blueocean plugin"
   retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "blueocean" -restart ${username_password_string}
   installed=1
 fi
