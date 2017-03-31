@@ -220,15 +220,12 @@ str_to_check="<useSecurity>false</useSecurity>"
 
 username_password_string="--username ${jenkins_user_name} --password ${jenkins_password}"
 if grep -q ${str_to_check} "/var/lib/jenkins/config.xml"; then
-  echo "BBBJenkins is unsecured, not using username/password"
+  echo "Jenkins is unsecured, not using username/password"
   # Jenkins is unsecured - no need to pass username and password 
   username_password_string=""
 fi
 
-all_plugins=$(java -jar jenkins-cli.jar -s {jenkins_url} groovy ${username_password_string} = < get-plugins.groovy)
-
-echo "ALL PLUGINS: "
-echo ${all_plugins}
+all_plugins=$(retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} groovy ${username_password_string} = < get-plugins.groovy)
 installed=0
 
 #install the required plugins
