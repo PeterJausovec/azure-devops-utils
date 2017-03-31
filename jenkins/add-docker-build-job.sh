@@ -225,16 +225,38 @@ if grep -q ${str_to_check} "/var/lib/jenkins/config.xml"; then
   username_password_string=""
 fi
 
-# TODO: Check if these are already installed and skip them if they are
+all_plugins=$(java -jar jenkins-cli.jar -s {jenkins_url} groovy ${username_password_string} = < get-plugins.groovy)
+installed=0
 #install the required plugins
-retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "credentials" -deploy ${username_password_string}
-retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "workflow-aggregator" -deploy ${username_password_string}
-retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "docker-workflow" -restart ${username_password_string}
-retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "git" -restart ${username_password_string}
-retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "blueocean" -restart ${username_password_string}
+if [[ $all_plugins != *"credentials"* ]]; then
+  retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "credentials" -deploy ${username_password_string}
+  installed=1
+fi
 
-#wait for instance to be back online
-retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} version ${username_password_string}
+if [[ $all_plugins != *"workflow-aggregator"* ]]; then
+  retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "workflow-aggregator" -deploy ${username_password_string}
+  installed=1
+fi
+
+if [[ $all_plugins != *"docker-workflow"* ]]; then
+  retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "docker-workflow" -restart ${username_password_string}
+  installed=1
+fi
+
+if [[ $all_plugins != *"git"* ]]; then
+  retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "git" -restart ${username_password_string}
+  installed=1
+fi
+
+if [[ $all_plugins != *"blueocean"* ]]; then
+  retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} install-plugin "blueocean" -restart ${username_password_string}
+  installed=1
+fi
+
+#wait for instance to be back online if we installed anything
+if [[ $installed == 1 ]]; then
+  retry_until_successful java -jar jenkins-cli.jar -s ${jenkins_url} version ${username_password_string}
+fi
 
 # TODO: Check if it's already added and skip if it is
 #add user/pwd
