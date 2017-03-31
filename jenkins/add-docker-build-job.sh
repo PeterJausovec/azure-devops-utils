@@ -226,6 +226,9 @@ if grep -q ${str_to_check} "/var/lib/jenkins/config.xml"; then
 fi
 
 all_plugins=$(java -jar jenkins-cli.jar -s {jenkins_url} groovy ${username_password_string} = < get-plugins.groovy)
+
+echo "ALL PLUGINS: "
+echo ${all_plugins}
 installed=0
 #install the required plugins
 if [[ $all_plugins != *"credentials"* ]]; then
