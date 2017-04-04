@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
     parameters {
@@ -25,7 +24,6 @@ pipeline {
                         env.LOGICAL_SERVICE_IP = sh(returnStdout: true, script: "kubectl get service ${params.SERVICE_NAME} -o go-template={{.spec.clusterIP}}")
                     }
 
-                    echo "Logical service IP: ${env.LOGICAL_SERVICE_IP}"
                     env.STABLE_SERVICE_EXISTS = true;
                     try {
                         env.EXISTING_SERVICE_NAME = sh(returnStdout: true, script: "kubectl get service --selector=via=${params.SERVICE_NAME},track=stable -o jsonpath='{.items[0].metadata.name}'")
@@ -33,13 +31,29 @@ pipeline {
                         env.STABLE_SERVICE_EXISTS = false;
                         env.EXISTING_SERVICE_NAME = '';
                     }
+                    // Get all secrets for the service, so we can inject environment variables 
+                    all_secrets = sh(returnStdout: true, script: "kubectl get secret --selector=run=${params.SERVICE_NAME} -o jsonpath='{.items[*].metadata.name}'")
+                    go_template = '{{range \$key, \$value:= .data}}{{\$key}}{{end}}'
+                    def all_env_vars = "\"env\": ["
+                    split_secrets = all_secrets.split()
+                    for (i = 0; i < split_secrets.length; i ++) {
+                        // Get the secretKeyName stored in the secret:
+                        def secretName = split_secrets[i]
+                        def secretKeyName = sh(returnStdout: true, script: "kubectl get secret ${secretName} -o go-template='${go_template}'")
+                        def envString = "{\"name\": \"${secretKeyName}\",\"valueFrom\": {\"secretKeyRef\": {\"name\": \"${secretName}\",\"key\": \"${secretKeyName}\"}}}"
+                        all_env_vars = all_env_vars + envString + ','
+                    }
 
+                    all_env_vars = all_env_vars.substring(0, all_env_vars.length() - 1)
+                    all_env_vars = all_env_vars + "]"
+                    echo all_env_vars
+ 
                     if (env.STABLE_SERVICE_EXISTS == "true") {
                         // Do the canary
                         // Stable service exists, deploy to canary
                         echo 'Stable service exists - deploy the canary version'
                         echo "Deploying the canary service image: ${params.REGISTRY_URL}/${params.IMAGE_NAME}:${params.IMAGE_TAG}"
-                        sh "kubectl run ${params.SERVICE_NAME}-${params.IMAGE_TAG} --image=${params.REGISTRY_URL}/${params.IMAGE_NAME}:${params.IMAGE_TAG} --port=80"
+                        sh "kubectl run ${params.SERVICE_NAME}-${params.IMAGE_TAG} --image=${params.REGISTRY_URL}/${params.IMAGE_NAME}:${params.IMAGE_TAG} --port=80 --overrides='{\"apiVersion\": \"apps/v1beta1\", \"spec\": { \"template\": {\"spec\": {\"containers\": [{ \"name\": \"${params.SERVICE_NAME}-${params.IMAGE_TAG}\", \"image\":\"${params.REGISTRY_URL}/${params.IMAGE_NAME}:${params.IMAGE_TAG}\", ${all_env_vars} }]}}}}'"
                         sh "kubectl expose deployment ${params.SERVICE_NAME}-${params.IMAGE_TAG} -l via=${params.SERVICE_NAME},track=canary,run=${params.SERVICE_NAME}-${params.IMAGE_TAG} --port=80"
                         script {
                             // TODO: Wait for the service IP to become available
@@ -51,7 +65,7 @@ pipeline {
                         // Deploy the stable version of the service
                         // Stable service doesn't exist yet (first deployment)
                         echo "Deploying the stable service image: ${params.REGISTRY_URL}/${params.IMAGE_NAME}:${params.IMAGE_TAG}"
-                        sh "kubectl run ${params.SERVICE_NAME}-${params.IMAGE_TAG} --image=${params.REGISTRY_URL}/${params.IMAGE_NAME}:${params.IMAGE_TAG} --port=80"
+                        sh "kubectl run ${params.SERVICE_NAME}-${params.IMAGE_TAG} --image=${params.REGISTRY_URL}/${params.IMAGE_NAME}:${params.IMAGE_TAG} --port=80 --overrides='{\"apiVersion\": \"apps/v1beta1\", \"spec\": { \"template\": {\"spec\": {\"containers\": [{ \"name\": \"${params.SERVICE_NAME}-${params.IMAGE_TAG}\", \"image\":\"${params.REGISTRY_URL}/${params.IMAGE_NAME}:${params.IMAGE_TAG}\", ${all_env_vars} }]}}}}'"
                         sh "kubectl expose deployment ${params.SERVICE_NAME}-${params.IMAGE_TAG} -l via=${params.SERVICE_NAME},track=stable,run=${params.SERVICE_NAME}-${params.IMAGE_TAG} --port=80"
                         sh "kubectl annotate service ${params.SERVICE_NAME} l5d=/svc/${params.SERVICE_NAME}-${params.IMAGE_TAG}"
                         script {
