@@ -36,7 +36,7 @@ pipeline {
                     go_template = '{{range \$key, \$value:= .data}}{{\$key}}{{end}}'
                     def all_env_vars = ""
                     split_secrets = all_secrets.split()
-                    for (i = 0; i < split_secrets.length; i ++) {
+                    for (i = 0; i &lt; split_secrets.length; i ++) {
                         // Get the secretKeyName stored in the secret:
                         def secretName = split_secrets[i]
                         def secretKeyName = sh(returnStdout: true, script: "kubectl get secret ${secretName} -o go-template='${go_template}'")
