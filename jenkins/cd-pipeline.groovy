@@ -16,7 +16,7 @@ pipeline {
                 sh 'kubectl apply -f https://raw.githubusercontent.com/stepro/k8s-l5d/master/l5d.yaml'
                 script {
                     try {
-                        sh "kubectl expose deployment l5d --name=${params.SERVICE_NAME} --port=80"
+                        sh "kubectl expose deployment l5d --name=${params.SERVICE_NAME} --port=80 -l=mindaro=1"
                     } catch (exc) {
                     }
                     finally {
